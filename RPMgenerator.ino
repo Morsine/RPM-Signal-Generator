@@ -37,8 +37,8 @@ A higher Accel_Rate variable will result in a slower speed. Try to keep
 this between (10 - 50). 
 */ 
 
-float RPM_MIN = 2000; 
-float RPM_MAX = 8500; 
+float RPM_MIN = 760; 
+float RPM_MAX = 6000; 
 int Accel_Rate = 10; 
 
 
@@ -57,7 +57,7 @@ unsigned long currentMillis=0;
 
 void setup() { 
 Serial.begin(9600);
-pinMode(5, OUTPUT); 
+pinMode(0, OUTPUT); 
 RPM_MIN = (RPM_MIN / 60); 
 RPM_MAX = (RPM_MAX / 60); 
 x = RPM_MIN; 
