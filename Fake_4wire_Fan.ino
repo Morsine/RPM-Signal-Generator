@@ -1,48 +1,24 @@
-/* 
-
-   ________    _                                   __ 
-  / ____/ /_  (_)___  ____  ___  _________  __  __/ /_
- / /   / __ \/ / __ \/ __ \/ _ \/ ___/ __ \/ / / / __/
-/ /___/ / / / / /_/ / /_/ /  __/ /  / / / / /_/ / /_  
-\____/_/ /_/_/ .___/ .___/\___/_/  /_/ /_/\__,_/\__/  
-            /_/   /_/         
+int NbTopsFan; int Calc;
 
 
-Visit us: www.chippernut.com 
-Written by: 
-Jon Gulbrandson 
-12/28/2014 
-
-Kudos to: 
-Adafruit (www.adafruit.com) 
-Arduino (www.arduino.com) 
-
-RPM SIGNAL GENERATOR 
-
-This generates a square wave using the Arduino TONE command. 
-The output is currently confiqured to Digital Pin #5. 
-Wire this pin directly to the input of your SHIFT LIGHT TACH SIGNAL IN 
-No Transistor is needed. 
-
-*/ 
-
-/********** CONFIGURATION **********/ 
-
-/* INSTRUCTIONS 
-Set your RPM lowpoint (RPM_MIN) to the lowest point, do not 
-go lower than 2000 RPM. Set your RPM highpoint (RPM_MAX) to 
-the redline of your vehicle. The Accel_Rate variable is used for 
-the speed at which the generator sweeps through the RPM range. 
-A higher Accel_Rate variable will result in a slower speed. Try to keep 
-this between (10 - 50). 
-*/ 
-
-float RPM_MIN = 760; 
-float RPM_MAX = 6000; 
-int Accel_Rate = 10; 
-
-
-
+//Connection to control board's PWM output
+int hallsensor = 2; typedef struct{
+ 
+//Defines the structure for multiple fans and 
+//their dividers 
+char fantype;
+unsigned int fandiv; }fanspec;
+ 
+//Definitions of the fans
+//This is the varible used to select the fan and it's divider,
+//set 1 for unipole hall effect sensor
+//and 2 for bipole hall effect sensor
+fanspec fanspace[3]={{0,1},{1,2},{2,8}}; char fan = 1;
+ 
+void rpm ()
+//This is the function that the interupt calls
+{ NbTopsFan++; }
+ 
 /********** DEFINITIONS **********/ 
 
 
@@ -57,39 +33,46 @@ unsigned long currentMillis=0;
 
 void setup() { 
 Serial.begin(9600);
-pinMode(0, OUTPUT); 
-RPM_MIN = (RPM_MIN / 60); 
-RPM_MAX = (RPM_MAX / 60); 
-x = RPM_MIN; 
+// PWM output pin
+pinMode(5, OUTPUT); 
+pinMode(hallsensor, INPUT);
+Serial.begin(9600);
+attachInterrupt(0, rpm, RISING);
 } 
 
 
 /********** MAIN LOOP **********/ 
 
 void loop() { 
+  NbTopsFan = 0;
+ 
+//Enables interrupts
+sei();
+ 
+//Wait 1 second
+delay (1000);
+ 
+//Disable interrupts
+cli();
+ 
+//Times NbTopsFan (which is apprioxiamately the fequency the fan 
+//is spinning at) by 60 seconds before dividing by the fan's divider
+Calc = ((NbTopsFan * 60)/fanspace[fan].fandiv);
+ 
+//Prints the number calculated above
+Serial.print (Calc, DEC);
+Serial.print (" rpm\r\n");
+Serial.print (Calc);
+ 
+//Prints " rpm" and a new line
+Serial.print (" rpm\r\n");
 
-//tone(5,70);
+if (Calc == 0){
+  Calc == 5;
+}
+else {
+  tone(5,Calc); 
+}
 
-      while (accel==false){
-         currentMillis = millis();
-        if(currentMillis - previousMillis > Accel_Rate) {
-        previousMillis = currentMillis;         
-        x++; 
-        tone(5,x); 
-        if (x>RPM_MAX){accel=true;} 
-        }
-      }
-       
-      while (accel==true){
-         currentMillis = millis();
-        if(currentMillis - previousMillis > Accel_Rate) {
-        previousMillis = currentMillis;         
-        x--; 
-        tone(5,x); 
-        if (x<RPM_MIN){accel=false;} 
-        }
-      }
+
   }
-
-
-   
